@@ -6,13 +6,13 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.2.3</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.pos</groupId>
 	<artifactId>pos-be</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>pos-be</name>
-	<description>POS Backend Application</description>
+	<description>Point of Sale Backend Service</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -40,7 +40,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
