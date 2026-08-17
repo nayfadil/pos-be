@@ -4,7 +4,6 @@ import com.pos.auth.authloginflow.dto.LoginRequest;
 import com.pos.auth.authloginflow.dto.LoginResponse;
 import com.pos.auth.authloginflow.exception.InvalidCredentialsException;
 import com.pos.auth.authloginflow.service.AuthLoginFlowService;
-import com.pos.auth.rsakey.dto.PublicKeyResponse;
 import com.pos.auth.rsakey.service.KeyPairService;
 import com.pos.auth.rsakey.util.RsaEncryptionUtil;
 import com.pos.security.addsecurityjwtdependencies.service.JwtService;
@@ -20,44 +19,35 @@ import java.security.PrivateKey;
 @RequiredArgsConstructor
 public class AuthLoginFlowServiceImpl implements AuthLoginFlowService {
 
-    private final KeyPairService keyPairService;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final KeyPairService keyPairService;
     private final JwtService jwtService;
-
-    @Override
-    public PublicKeyResponse getPublicKey() {
-        return keyPairService.generateKeyPair();
-    }
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        PrivateKey privateKey = keyPairService.getPrivateKey(request.getKeyId());
-        if (privateKey == null) {
-            throw new InvalidCredentialsException("Invalid or expired RSA key ID");
-        }
+        PrivateKey privateKey = keyPairService.getPrivateKey();
 
         String decryptedPassword;
         try {
             decryptedPassword = RsaEncryptionUtil.decrypt(request.getEncryptedPassword(), privateKey);
         } catch (Exception e) {
-            throw new InvalidCredentialsException("Failed to decrypt password");
+            throw new InvalidCredentialsException("Failed to decrypt password using RSA key");
         }
 
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
         if (!passwordEncoder.matches(decryptedPassword, user.getPassword())) {
-            throw new InvalidCredentialsException("Invalid username or password");
+            throw new InvalidCredentialsException("Invalid email or password");
         }
 
-        String token = jwtService.generateToken(user.getUsername());
-        long expiresAt = jwtService.getExpirationTime();
+        String token = jwtService.generateToken(user.getEmail());
 
         return LoginResponse.builder()
                 .token(token)
-                .type("Bearer")
-                .expiresAt(expiresAt)
+                .email(user.getEmail())
+                .username(user.getUsername())
                 .build();
     }
 }
