@@ -20,13 +20,15 @@ public class AuthController {
 
     private final AuthLoginFlowService authLoginFlowService;
 
-    @GetMapping("/public-key")
-    public ResponseEntity<PublicKeyResponse> getPublicKey() {
-        return ResponseEntity.ok(authLoginFlowService.getPublicKey());
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        LoginResponse response = authLoginFlowService.login(loginRequest);
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authLoginFlowService.login(request));
+    @GetMapping("/public-key")
+    public ResponseEntity<PublicKeyResponse> getPublicKey() {
+        PublicKeyResponse response = authLoginFlowService.getPublicKey();
+        return ResponseEntity.ok(response);
     }
 }
